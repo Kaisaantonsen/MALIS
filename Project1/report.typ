@@ -25,6 +25,21 @@
 ]
 = Part II: Human play 
 == Task 2
+*Season 1*
+\ Kaisa: 
+\ Synne: 
+\ Fayad: 
+
+*Season 2*
+\ Kaisa: 
+\ Synne: 
+\ Fayad: 
+
+*Season 3*
+\ Kaisa: 
+\ Synne:
+\ Fayad: 
+
 == Task 3 
 
 = Part III: Bandit algorithms 
