@@ -140,18 +140,20 @@ class RandomContextualAgent(ContextualAgent):
 # Your agents
 # ---------------------------------------------------------------------------
 
+
 class HumanRuleAgent(Agent):
     """
     Rule-based agent that changes spots based on recent catches.
 
     How it chooses
     --------------
-    It starts at spot x and stays there while catches are improving.
+    It starts at a random spot and stays there while catches are improving.
     Two catches below the low threshold at the same spot cause it to switch,
     even if they are not consecutive. It also switches after two consecutive
-    catches at or above the high threshold. For catches between the
-    thresholds, it switches if the catch is no better than the previous
-    catch at the current spot.
+    catches above the high threshold. The low threshold is set by the first
+    catch at a spot and stays fixed. The high threshold rises when catches
+    improve. For catches between the thresholds, it switches if the catch is
+    no better than the previous catch at the current spot.
 
     Memory
     ------
@@ -159,6 +161,10 @@ class HumanRuleAgent(Agent):
         The spot chosen for the current day.
     previous_catch : float or None
         The last catch at the current spot, or None after switching.
+    high_threshold : float or None
+        The best catch so far at the current spot plus delta.
+    low_threshold : float or None
+        The first catch at the current spot minus delta.
     high_catch_count : int
         Number of consecutive high catches at the current spot.
     low_catch_count : int
@@ -168,22 +174,23 @@ class HumanRuleAgent(Agent):
     ----------
     n_spots : int
         Number of available fishing spots.
-    low_threshold : float
-        Catches below this value count toward switching after two low catches.
-    high_threshold : float
-        Two consecutive catches at or above this value trigger a switch.
+    delta : float
+        Amount used to set the low threshold from the first catch and the
+        high threshold from improving catches.
+    seed : int or None
+        Seed for repeatable random spot choices.
     """
 
-    def __init__(self, n_spots, low_threshold, high_threshold):
-        super().__init__()
-        self.n_spots = n_spots
-        self.low_threshold = low_threshold
-        self.high_threshold = high_threshold
+    def __init__(self, n_spots, delta=0.5, seed=None):
+        super().__init__(n_spots=n_spots, seed=seed)
+        self.delta = delta
         self.reset()
 
     def reset(self):
-        self.current_spot = 0
+        self.current_spot = int(self.rng.integers(self.n_spots))
         self.previous_catch = None
+        self.high_threshold = None
+        self.low_threshold = None
         self.high_catch_count = 0
         self.low_catch_count = 0
 
@@ -191,33 +198,49 @@ class HumanRuleAgent(Agent):
         return self.current_spot
 
     def update(self, spot, catch):
-        if catch >= self.high_threshold:
+        if self.previous_catch is None:
+            self.previous_catch = catch
+            self.high_threshold = catch + self.delta
+            self.low_threshold = max(0.0, catch - self.delta)
+            return
+
+        if catch > self.high_threshold:
             self.high_catch_count += 1
+
             if self.high_catch_count >= 2:
                 self.switch_spot()
                 return
+
         elif catch < self.low_threshold:
             self.high_catch_count = 0
             self.low_catch_count += 1
+
             if self.low_catch_count >= 2:
                 self.switch_spot()
                 return
-        elif self.previous_catch is not None and catch <= self.previous_catch:
+
+        elif catch <= self.previous_catch:
             self.switch_spot()
             return
+
         else:
             self.high_catch_count = 0
 
         self.previous_catch = catch
+        self.high_threshold = max(self.high_threshold, catch + self.delta)
 
     def switch_spot(self):
         possible_spots = [i for i in range(self.n_spots) if i != self.current_spot]
+
         if possible_spots:
-            self.current_spot = random.choice(possible_spots)
+            self.current_spot = int(self.rng.choice(possible_spots))
 
         self.previous_catch = None
+        self.high_threshold = None
+        self.low_threshold = None
         self.high_catch_count = 0
         self.low_catch_count = 0
+
 
 # Task 4: add below at least two agents implementing methods from the reading
 # (Sutton and Barto, Chapter 2), as subclasses of Agent. Document each class:
@@ -253,31 +276,25 @@ class EpsilonGreedyAgent(Agent):
         using the method from Section 2.4.
     """
 
-    def __init__(self, n_spots, epsilon=0.1):
-        super().__init__()
-        self.n_spots = n_spots
+    def __init__(self, n_spots=5, seed=None, epsilon=0.1):
+        super().__init__(n_spots, seed)
         self.epsilon = epsilon
         self.reset()
 
     def reset(self):
-        self.q = [0.0] * self.n_spots
-        self.counts = [0] * self.n_spots
+        self.Q = np.zeros(self.n_spots)
+        self.N = np.zeros(self.n_spots, dtype=int)
 
     def choose(self):
-        if random.random() < self.epsilon:
-            return random.randrange(self.n_spots)
+        if self.rng.random() < self.epsilon:
+            return int(self.rng.integers(self.n_spots))
 
-        best_value = max(self.q)
-        best_spots = [
-            i for i, value in enumerate(self.q)
-            if value == best_value
-        ]
-        return random.choice(best_spots)
+        best_spots = np.flatnonzero(self.Q == np.max(self.Q))
+        return int(self.rng.choice(best_spots))
 
     def update(self, spot, catch):
-        self.counts[spot] += 1
-        n = self.counts[spot]
-        self.q[spot] += (catch - self.q[spot]) / n
+        self.N[spot] += 1
+        self.Q[spot] += (catch - self.Q[spot]) / self.N[spot]
 
 
 class UCBAgent(Agent):
@@ -314,83 +331,6 @@ class UCBAgent(Agent):
         using the method from Section 2.4.
     """
 
-    def __init__(self, n_spots, c=2.0):
-        super().__init__()
-        self.n_spots = n_spots
-        self.c = c
-        self.reset()
-
-    def reset(self):
-        self.q = [0.0] * self.n_spots
-        self.counts = [0] * self.n_spots
-        self.t = 0
-
-    def choose(self):
-        for spot in range(self.n_spots):
-            if self.counts[spot] == 0:
-                return spot
-
-        scores = [
-            self.q[spot] + self.c * math.sqrt(math.log(self.t) / self.counts[spot])
-            for spot in range(self.n_spots)
-        ]
-
-        best_score = max(scores)
-        best_spots = [i for i, score in enumerate(scores) if score == best_score]
-        return random.choice(best_spots)
-
-    def update(self, spot, catch):
-        self.t += 1
-        self.counts[spot] += 1
-        n = self.counts[spot]
-        self.q[spot] += (catch - self.q[spot]) / n
-
-
-class EpsilonGreedyAgent(Agent):
-    """Epsilon-greedy agent using sample-average rewards.
-
-    Memory:
-        Q: estimated average catch for each spot
-        N: number of visits to each spot
-
-    epsilon: probability of random exploration
-    """
-
-    def __init__(self, n_spots=5, seed=None, epsilon=0.1):
-        super().__init__(n_spots, seed)
-        self.epsilon = epsilon
-        self.reset()
-
-    def reset(self):
-        self.Q = np.zeros(self.n_spots)
-        self.N = np.zeros(self.n_spots, dtype=int)
-
-    def choose(self):
-        if self.rng.random() < self.epsilon:
-            return int(self.rng.integers(self.n_spots))
-
-        best_spots = np.flatnonzero(self.Q == np.max(self.Q))
-        return int(self.rng.choice(best_spots))
-
-    def update(self, spot, catch):
-        self.N[spot] += 1
-        self.Q[spot] += (
-            catch - self.Q[spot]
-        ) / self.N[spot]
-
-
-
-class UCBAgent(Agent):
-    """Upper Confidence Bound (UCB) agent.
-
-    Memory:
-        Q: estimated average catch per spot
-        N: number of visits per spot
-        t: total number of completed days
-
-    c: controls the amount of exploration
-    """
-
     def __init__(self, n_spots=5, seed=None, c=2.0):
         super().__init__(n_spots, seed)
         self.c = c
@@ -407,9 +347,7 @@ class UCBAgent(Agent):
         if len(unvisited) > 0:
             return int(self.rng.choice(unvisited))
 
-        scores = self.Q + self.c * np.sqrt(
-            np.log(self.t + 1) / self.N
-        )
+        scores = self.Q + self.c * np.sqrt(np.log(self.t + 1) / self.N)
 
         best_spots = np.flatnonzero(scores == np.max(scores))
         return int(self.rng.choice(best_spots))
@@ -417,10 +355,7 @@ class UCBAgent(Agent):
     def update(self, spot, catch):
         self.t += 1
         self.N[spot] += 1
-        self.Q[spot] += (
-            catch - self.Q[spot]
-        ) / self.N[spot]
-
+        self.Q[spot] += (catch - self.Q[spot]) / self.N[spot]
 
 
 # Task 6 (optional): add your contextual agents below, as subclasses of
