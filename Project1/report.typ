@@ -230,6 +230,79 @@ Here, $Q(a)$ is the estimated average catch for spot $a$, $N(a)$ is how often it
 
 \
 == Task 5
+*Random bayes*
+
+We evaluated four agents on 1,000 randomly generated bays per season, using the same bay seeds to ensure fair comparisons. Performance was measured using cumulative pseudo-regret, where lower values indicate better decisions. @random-bays presents the mean regret and standard deviation.
+
+
+#figure(
+  table(
+    columns: (auto, 1fr, 1fr, 1fr),
+    align: center,
+    inset: 6pt,
+    stroke: 0.5pt + black,
+
+    table.header(
+      table.cell(fill: rgb("#9fb6c6"))[*Agent*],
+      table.cell(fill: rgb("#9fb6c6"))[*Season 1*],
+      table.cell(fill: rgb("#9fb6c6"))[*Season 2*],
+      table.cell(fill: rgb("#9fb6c6"))[*Season 3*],
+    ),
+
+    [Random], [79.32 ± 29.86], [27.18 ± 11.25], [78.54 ± 21.47],
+    [Human Rule], [78.86 ± 32.14], [26.38 ± 13.81], [79.08 ± 24.93],
+    [ε-greedy], [55.14 ± 48.35], [24.16 ± 19.83], [66.13 ± 39.45],
+    [*UCB*], [*25.06 ± 11.17*], [*17.12 ± 5.96*], [*43.23 ± 20.73*],
+  ),
+  caption: [Mean cumulative pseudo-regret ± standard deviation (kg) across 1,000 randomly generated bays per season. Lower values indicate better performance.],
+) <random-bays>
+
+
+UCB consistently achieved the lowest mean regret across all seasons, demonstrating an effective balance between exploration and exploitation. Its relatively low standard deviation also indicates more consistent performance. ε-greedy generally outperformed random selection but showed considerably greater variability. The human-inspired strategy performed similarly to the random baseline.
+
+Season 2 had lower cumulative regret partly because it lasted only 10 days, compared with 30 days for the other seasons. Season 3 introduced changing reward distributions, making adaptation more challenging.
+
+*Our team's bays*
+
+We reconstructed the nine original fishing bays using FishingBay.from_log() and evaluated each agent under the same conditions as the human players. @team-bays compares their cumulative pseudo-regret.
+
+
+#figure(
+  text(size: 8pt)[
+    #table(
+      columns: (auto, auto, 1fr, 1fr, 1fr, 1fr, 1fr),
+      align: center,
+      inset: 4pt,
+      stroke: 0.5pt + black,
+
+      table.header(
+        table.cell(fill: rgb("#9fb6c6"))[*Player*],
+        table.cell(fill: rgb("#9fb6c6"))[*Season*],
+        table.cell(fill: rgb("#9fb6c6"))[*Human*],
+        table.cell(fill: rgb("#9fb6c6"))[*Random*],
+        table.cell(fill: rgb("#9fb6c6"))[*Human Rule*],
+        table.cell(fill: rgb("#9fb6c6"))[*ε-greedy*],
+        table.cell(fill: rgb("#9fb6c6"))[*UCB*],
+      ),
+
+      [Kaisa], [1], [69.8], [74.0], [52.8], [50.4], [*22.6*],
+      [Kaisa], [2], [29.3], [44.2], [50.4], [40.3], [*22.3*],
+      [Kaisa], [3], [64.5], [46.2], [59.7], [95.6], [*36.2*],
+
+      [Synne], [1], [110.0], [107.3], [102.5], [90.0], [*18.5*],
+      [Synne], [2], [23.3], [50.0], [50.7], [78.0], [*16.7*],
+      [Synne], [3], [74.4], [97.4], [104.5], [*48.0*], [49.6],
+
+      [Fayad], [1], [50.6], [45.1], [50.7], [*6.4*], [22.5],
+      [Fayad], [2], [*25.9*], [36.9], [51.4], [58.0], [31.7],
+      [Fayad], [3], [40.4], [52.7], [53.0], [26.3], [*25.6*],
+    )
+  ],
+  caption: [Cumulative pseudo-regret (kg) for human players and agents on the original fishing bays. Bold values indicate the lowest regret in each row.],
+) <team-bays>
+
+
+UCB outperformed the human players in eight of nine cases. The exception was Fayad in Season 2, where the human achieved 25.9 kg regret compared with UCB's 31.7 kg. ε-greedy performed particularly well on Fayad's Season 1 bay and Synne's Season 3 bay. Overall, UCB demonstrated the strongest performance, although individual results varied depending on the bay and random seed.
 
 = Part IV: Contextual bandits
 == Task 6
