@@ -360,3 +360,103 @@ class UCBAgent(Agent):
 
 # Task 6 (optional): add your contextual agents below, as subclasses of
 # ContextualAgent.
+
+
+class LinearRegressionAgent(ContextualAgent):
+    """Task 6: one linear regression per spot, used to choose where to fish.
+
+    Model
+    -----
+    For each spot a, the catch is predicted from the morning conditions by
+
+        catch ~ theta_a . phi(x),    phi(x) = [1, wind/40, waves/3, tide/2]
+
+    (the conditions are divided by their maximum so that the three are on
+    the same 0-to-1 scale). theta_a is the least-squares solution on the days
+    spot a was fished, with a small ridge term so that it always exists:
+
+        theta_a = A_a^-1 b_a,   A_a = ridge * I + sum phi phi^T,   b_a = sum catch * phi
+
+    How it chooses
+    --------------
+    1. Warm-up. The first n_init * n_spots days, fish every spot n_init times
+       (spot 0, 1, ..., 4, then again), so that every regression has data.
+    2. Then fish the spot with the highest predicted catch for today's
+       conditions (ties broken at random).
+
+    With n_init = 1, a spot whose single catch was bad is predicted to be bad,
+    is never fished again, and its prediction is never corrected. Several
+    visits per spot (n_init = 5) give each regression enough data to avoid it.
+
+    Memory
+    ------
+    A : array (n_spots, 4, 4)     sum of phi phi^T per spot, plus ridge * I
+    b : array (n_spots, 4)        sum of catch * phi per spot
+    counts : array of n_spots     number of days each spot was fished
+
+    Parameters
+    ----------
+    n_init : int
+        Visits to each spot during the warm-up.
+    ridge : float > 0
+        Regularisation of the regressions.
+    """
+
+    SCALE = np.array([40.0, 3.0, 2.0])          # maximum wind (km/h), waves (m), tide (m)
+
+    def __init__(self, n_spots=5, seed=None, n_init=5, ridge=1.0):
+        super().__init__(n_spots=n_spots, seed=seed)
+        self.n_init = n_init
+        self.ridge = ridge
+
+    def features(self, x):
+        """phi(x) = [1, wind/40, waves/3, tide/2]."""
+        return np.concatenate(([1.0], np.asarray(x, dtype=float) / self.SCALE))
+
+    def reset(self):
+        d = 1 + len(self.SCALE)
+        self.A = np.array([self.ridge * np.eye(d) for _ in range(self.n_spots)])
+        self.b = np.zeros((self.n_spots, d))
+        self.counts = np.zeros(self.n_spots, dtype=int)
+
+    def predict(self, x):
+        """Predicted catch (kg) at every spot for the conditions x."""
+        phi = self.features(x)
+        return np.array([np.linalg.solve(self.A[a], self.b[a]) @ phi for a in range(self.n_spots)])
+
+    def choose(self, x):
+        # 1. Warm-up: the first spot that has fewer than n_init catches.
+        warm_up = np.flatnonzero(self.counts < self.n_init)
+        if warm_up.size > 0:
+            return int(warm_up[0])
+        # 2. The spot with the highest predicted catch.
+        prediction = self.predict(x)
+        best = np.flatnonzero(prediction == prediction.max())
+        return int(self.rng.choice(best))
+
+    def update(self, x, spot, catch):
+        phi = self.features(x)
+        self.A[spot] += np.outer(phi, phi)
+        self.b[spot] += catch * phi
+        self.counts[spot] += 1
+
+
+class NoContextAgent(ContextualAgent):
+    """Plays a contextual bay with an agent of Part III, which ignores the conditions.
+
+    Used to compare with the best agent of Part III on the same bays:
+    NoContextAgent(UCBAgent(c=2, seed=0)).
+    """
+
+    def __init__(self, agent):
+        super().__init__(n_spots=agent.n_spots)
+        self.agent = agent
+
+    def reset(self):
+        self.agent.reset()
+
+    def choose(self, x):
+        return self.agent.choose()
+
+    def update(self, x, spot, catch):
+        self.agent.update(spot, catch)
