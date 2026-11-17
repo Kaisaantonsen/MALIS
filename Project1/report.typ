@@ -330,11 +330,11 @@ UCB outperformed the humans in eight of nine cases. Fayad was the exception in S
       table.cell(fill: rgb("#9fb6c6"))[*Season 3*],
     ),
 
-    [ε-greedy], [+7.0 ± 0.6], [+22.9 ± 1.2],
-    [Human Rule], [+9.3 ± 0.4], [+35.9 ± 0.8],
-    [Random], [+10.1 ± 0.3], [+35.3 ± 0.8],
+    [EpsilonGreedyAgent], [+7.0 ± 0.6], [+22.9 ± 1.2],
+    [HumanRuleAgent], [+9.3 ± 0.4], [+35.9 ± 0.8],
+    [RandomAgent], [+10.1 ± 0.3], [+35.3 ± 0.8],
   ),
-  caption: [Extra cumulative pseudo-regret compared with UCB (kg), mean ± standard error over the same 1,000 bays. UCB: 17.1 kg in Season 2, 43.2 kg in Season 3.],
+  caption: [Extra cumulative pseudo-regret compared with UCBAgent (kg), mean ± standard error over the same 1,000 bays. UCBAgent: 17.1 kg in Season 2, 43.2 kg in Season 3.],
 ) <seasons-2-3>
 
 Comparing each agent with UCB on the same bays, UCB is the best agent in both seasons (every difference exceeds 10 standard errors). In Season 2, UCB tries every spot once, then exploits the best average from day 6, while ε-greedy rarely leaves its first spot. In Season 3, UCB and ε-greedy fall to random level on day 16; UCB recovers faster because its exploration bonus grows for spots not visited recently. The human rule keeps no estimate per spot and stays at random level throughout.
@@ -362,7 +362,7 @@ Comparing each agent with UCB on the same bays, UCB is the best agent in both se
     [Season 2], [26.2], [25.0], [24.2], [23.0], [*22.3*], [22.6],
     [Season 3], [78.7], [71.7], [66.1], [*60.4*], [60.8], [62.0],
   ),
-  caption: [Mean cumulative pseudo-regret (kg) of ε-greedy over 1,000 bays per season. Bold: lowest regret.],
+  caption: [Mean cumulative pseudo-regret (kg) of EpsilonGreedyAgent over 1,000 bays per season. Bold: lowest regret.],
 ) <epsilon>
 
 The regret of ε-greedy decreases up to ε = 0.2–0.3 in every season, then rises at 0.5. The optimum is high because the estimates start at zero: with ε = 0 the agent never leaves its first spot, so random days are its only way to explore. Even at its best, ε-greedy stays far behind UCB (48.5 vs 25.1 kg in Season 1).
@@ -395,7 +395,7 @@ The regret of ε-greedy decreases up to ε = 0.2–0.3 in every season, then ris
     [20], [100], [456.7], [84.9%], [76.8%], [4.0%],
   )
   ],
-  caption: [Regression agent acting only on its predictions after `n_init` visits per spot, over 200 contextual bays (300 days).],
+  caption: [LinearRegressionAgent acting only on its predictions after `n_init` visits per spot, over 200 contextual bays (300 days).],
 ) <n-init>
 
 #figure(
@@ -428,16 +428,16 @@ The regret of ε-greedy decreases up to ε = 0.2–0.3 in every season, then ris
 
     table.header(
       table.cell(fill: rgb("#9fb6c6"))[*Agent*],
-      table.cell(fill: rgb("#9fb6c6"))[*Mean regret (kg)*],
-      table.cell(fill: rgb("#9fb6c6"))[*Mean efficiency*],
+      table.cell(fill: rgb("#9fb6c6"))[*Regret (kg)*],
+      table.cell(fill: rgb("#9fb6c6"))[*Efficiency*],
       table.cell(fill: rgb("#9fb6c6"))[*Worst bay*],
-      table.cell(fill: rgb("#9fb6c6"))[*Bays below 80%*],
+      table.cell(fill: rgb("#9fb6c6"))[*Below 80%*],
     ),
 
-    [Random], [1305.0], [57.1%], [29.8%], [100%],
-    [UCB, no context (best of Part III)], [190.8], [93.1%], [70.0%], [6.0%],
-    [Regression, 1 visit], [231.4], [92.0%], [36.4%], [8.5%],
-    [*Regression, 5 visits (final)*], [*166.4*], [*94.4%*], [*85.4%*], [*0%*],
+    [RandomContextualAgent], [1305.0], [57.1%], [29.8%], [100%],
+    [UCBAgent, no context (best of Part III)], [190.8], [93.1%], [70.0%], [6.0%],
+    [LinearRegressionAgent, 1 visit], [231.4], [92.0%], [36.4%], [8.5%],
+    [*LinearRegressionAgent, 5 visits (final)*], [*166.4*], [*94.4%*], [*85.4%*], [*0%*],
   )
   ],
   caption: [Comparison over 200 contextual bays.],
