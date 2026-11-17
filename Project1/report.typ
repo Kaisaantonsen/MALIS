@@ -390,20 +390,20 @@ The regret of ε-greedy decreases up to ε = 0.2–0.3 in every season, then ris
 
 #figure(
   table(
-    columns: (auto, 1fr, auto),
+    columns: (auto, 1fr, 1fr, 1fr),
     align: center,
     inset: 5pt,
     stroke: 0.5pt + black,
 
     table.header(
-      table.cell(fill: rgb("#9fb6c6"))[**],
-      table.cell(fill: rgb("#9fb6c6"))[*Days at spot 0 / 1 / 2 / 3 / 4*],
+      table.cell(fill: rgb("#9fb6c6"))[*Bay 156 (the best spot is spot 0)*],
+      table.cell(fill: rgb("#9fb6c6"))[*Days at spot 0*],
+      table.cell(fill: rgb("#9fb6c6"))[*Days at spot 4*],
       table.cell(fill: rgb("#9fb6c6"))[*Efficiency*],
     ),
 
-    [Days each spot is truly the best], [296 / 2 / 0 / 0 / 2], [–],
-    [1 visit per spot], [1 / 4 / 3 / 1 / 291], [36.4%],
-    [5 visits per spot], [280 / 5 / 5 / 5 / 5], [94.9%],
+    [1 visit per spot], [1], [291], [36.4%],
+    [5 visits per spot], [280], [5], [94.9%],
   ),
   caption: [Bay 156, where acting only on the predictions fails.],
 ) <bay-156>
