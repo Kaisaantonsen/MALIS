@@ -439,14 +439,12 @@ class LinearRegressionAgent(ContextualAgent):
     --------------
     1. Warm-up. The first n_init * n_spots days, fish every spot n_init times
        (spot 0, 1, ..., 4, then again), so that every regression has data.
-    2. Then fish the spot with the highest score
+    2. Then fish the spot with the highest predicted catch for today's
+       conditions (ties broken at random).
 
-           score_a = theta_a . phi(x)  +  bonus * sqrt(phi(x)^T A_a^-1 phi(x))
-
-       The first term is the predicted catch. The second term is the
-       uncertainty of that prediction (large when spot a has few catches in
-       conditions like today's), as in the UCB rule of Part III (LinUCB).
-       bonus = 0 gives the agent that acts only on its predictions.
+    With n_init = 1, a spot whose single catch was bad is predicted to be bad,
+    is never fished again, and its prediction is never corrected. Several
+    visits per spot (n_init = 5) give each regression enough data to avoid it.
 
     Memory
     ------
@@ -458,18 +456,15 @@ class LinearRegressionAgent(ContextualAgent):
     ----------
     n_init : int
         Visits to each spot during the warm-up.
-    bonus : float >= 0
-        Weight of the uncertainty term (in kg). 0 = predictions only.
     ridge : float > 0
         Regularisation of the regressions.
     """
 
     SCALE = np.array([40.0, 3.0, 2.0])          # maximum wind (km/h), waves (m), tide (m)
 
-    def __init__(self, n_spots=5, seed=None, n_init=5, bonus=0.0, ridge=1.0):
+    def __init__(self, n_spots=5, seed=None, n_init=5, ridge=1.0):
         super().__init__(n_spots=n_spots, seed=seed)
         self.n_init = n_init
-        self.bonus = bonus
         self.ridge = ridge
 
     def features(self, x):
@@ -492,13 +487,9 @@ class LinearRegressionAgent(ContextualAgent):
         warm_up = np.flatnonzero(self.counts < self.n_init)
         if warm_up.size > 0:
             return int(warm_up[0])
-        # 2. Predicted catch + bonus * uncertainty of the prediction.
-        phi = self.features(x)
-        score = self.predict(x)
-        if self.bonus > 0:
-            uncertainty = np.array([np.sqrt(phi @ np.linalg.solve(self.A[a], phi)) for a in range(self.n_spots)])
-            score = score + self.bonus * uncertainty
-        best = np.flatnonzero(score == score.max())
+        # 2. The spot with the highest predicted catch.
+        prediction = self.predict(x)
+        best = np.flatnonzero(prediction == prediction.max())
         return int(self.rng.choice(best))
 
     def update(self, x, spot, catch):
