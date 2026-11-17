@@ -48,8 +48,8 @@
 \
 *Season 2*
 \ Kaisa: I fished mostly at Seagrass Bed, Deep Channel, Lighthouse Reef, but also some at Deep Channel. My strategy was to fish further out (see @tab-strategies), which I did.  
-\ Synne: I tested all the fishing spots before mainly switching between Rocky Point and Seagrass Bed, following my strategy to fish where I caught the most @tab-strategies. 
-\ Fayad: Here I swicthed spots after high catches, and stayed longer after lower catches, consistent with my strategy in @tab-strategies.
+\ Synne: I tested all the fishing spots before mainly switching between Rocky Point and Seagrass Bed, following my strategy to fish where I caught the most (see @tab-strategies). 
+\ Fayad: I swicthed spots after high catches, and stayed longer after lower catches, consistent with my strategy in @tab-strategies.
 
 \
 *Season 3*
@@ -227,7 +227,7 @@ Overall, Synne showed the clearest behavioral adjustment to the shorter season a
 
 = Part III: Bandit algorithms 
 == Task 4
-=== Description of our agents\ 
+*Description of our agents*\ 
 *Human-Ruled Agent*\
 This agent follows specific rules based on its catches. It switches spots after two low catches at the same spot (doesn't have to be consecutive), two high catches in a row, or when a catch between the thresholds is no better than the previous catch at that spot.
 
@@ -446,3 +446,9 @@ The regret of ε-greedy decreases up to ε = 0.2–0.3 in every season, then ris
 Each spot's mean catch is linear in wind, waves and tide, with spot-specific weights, so we fit one linear regression per spot. The agent fishes every spot `n_init` times, then the spot with the highest predicted catch. Acting only on the predictions fails when the regressions start with too little data: with one visit per spot, 8.5% of the bays fall below 80% efficiency. In bay 156, the single catch at the best spot was low, so its prediction stayed low (about 1 kg instead of 9.2 kg) and the agent never returned to correct it. A wrong prediction confirms itself, because the agent only collects data where it already expects good catches. Our fix is 5 visits per spot: no bay falls below 80%, at the cost of 24 kg of mean regret compared with 2 visits. The final agent has 13% less regret than UCB and a much better worst case, but it never re-checks a spot after the warm-up.
 
 = Team member contributions
+When working on this project, we tried our best to divide the work equally among each other, which we feel like we succeeded in. 
+Even though we delegated differently, everyone has contributed the same amount to the project. 
+
+*Kaisa*: 
+*Synne*: I worked most on task 2 in part 2, and task 4 in part 3. 
+*Fayad*:
