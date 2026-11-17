@@ -30,6 +30,9 @@ Example
     bay = FishingBay(season=1, seed=0)
     total = play(RandomAgent(seed=0), bay)
 """
+import math
+import random
+
 import numpy as np
 
 from fishing import ContextualBay, FishingBay
@@ -137,27 +140,210 @@ class RandomContextualAgent(ContextualAgent):
 # Your agents
 # ---------------------------------------------------------------------------
 
-
 class HumanRuleAgent(Agent):
-    """Task 4: the best human strategy identified in Part II, written as a rule.
+    """
+    Rule-based agent that changes spots based on recent catches.
 
-    Describe the rule here, precisely enough that someone could apply it by hand.
-    Add constructor parameters if your rule has any (call super().__init__ first).
+    How it chooses
+    --------------
+    It starts at spot x and stays there while catches are improving.
+    Two catches below the low threshold at the same spot cause it to switch,
+    even if they are not consecutive. It also switches after two consecutive
+    catches at or above the high threshold. For catches between the
+    thresholds, it switches if the catch is no better than the previous
+    catch at the current spot.
+
+    Memory
+    ------
+    current_spot : int
+        The spot chosen for the current day.
+    previous_catch : float or None
+        The last catch at the current spot, or None after switching.
+    high_catch_count : int
+        Number of consecutive high catches at the current spot.
+    low_catch_count : int
+        Number of low catches at the current spot.
+
+    Parameters
+    ----------
+    n_spots : int
+        Number of available fishing spots.
+    low_threshold : float
+        Catches below this value count toward switching after two low catches.
+    high_threshold : float
+        Two consecutive catches at or above this value trigger a switch.
     """
 
+    def __init__(self, n_spots, low_threshold, high_threshold):
+        super().__init__()
+        self.n_spots = n_spots
+        self.low_threshold = low_threshold
+        self.high_threshold = high_threshold
+        self.reset()
+
     def reset(self):
-        raise NotImplementedError("Task 4")
+        self.current_spot = 0
+        self.previous_catch = None
+        self.high_catch_count = 0
+        self.low_catch_count = 0
 
     def choose(self):
-        raise NotImplementedError("Task 4")
+        return self.current_spot
 
     def update(self, spot, catch):
-        raise NotImplementedError("Task 4")
+        if catch >= self.high_threshold:
+            self.high_catch_count += 1
+            if self.high_catch_count >= 2:
+                self.switch_spot()
+                return
+        elif catch < self.low_threshold:
+            self.high_catch_count = 0
+            self.low_catch_count += 1
+            if self.low_catch_count >= 2:
+                self.switch_spot()
+                return
+        elif self.previous_catch is not None and catch <= self.previous_catch:
+            self.switch_spot()
+            return
+        else:
+            self.high_catch_count = 0
 
+        self.previous_catch = catch
+
+    def switch_spot(self):
+        possible_spots = [i for i in range(self.n_spots) if i != self.current_spot]
+        if possible_spots:
+            self.current_spot = random.choice(possible_spots)
+
+        self.previous_catch = None
+        self.high_catch_count = 0
+        self.low_catch_count = 0
 
 # Task 4: add below at least two agents implementing methods from the reading
 # (Sutton and Barto, Chapter 2), as subclasses of Agent. Document each class:
 # what it keeps in memory, how it chooses, what its parameters mean.
+
+class EpsilonGreedyAgent(Agent):
+    """
+        Epsilon-greedy bandit agent from section 2.2 (Sutton and Barto, Chapter 2).
+
+        How it chooses
+        --------------
+        With probability epsilon, it selects a random spot.
+        Otherwise, it selects a spot with the highest estimated reward.
+        If multiple spots have the same highest estimated reward,
+        one is selected randomly.
+
+        Memory
+        ------
+        q : list
+            Estimated average reward for each fishing spot.
+        counts : list
+            Number of times each spot has been selected.
+
+        Parameters
+        ----------
+        n_spots : int
+            Number of available fishing spots.
+        epsilon : float
+            Probability of choosing a random spot instead of
+            the current estimated best spot.
+
+        The update() method updates the estimated reward after each catch,
+        using the method from Section 2.4.
+    """
+
+    def __init__(self, n_spots, epsilon=0.1):
+        super().__init__()
+        self.n_spots = n_spots
+        self.epsilon = epsilon
+        self.reset()
+
+    def reset(self):
+        self.q = [0.0] * self.n_spots
+        self.counts = [0] * self.n_spots
+
+    def choose(self):
+        if random.random() < self.epsilon:
+            return random.randrange(self.n_spots)
+
+        best_value = max(self.q)
+        best_spots = [
+            i for i, value in enumerate(self.q)
+            if value == best_value
+        ]
+        return random.choice(best_spots)
+
+    def update(self, spot, catch):
+        self.counts[spot] += 1
+        n = self.counts[spot]
+        self.q[spot] += (catch - self.q[spot]) / n
+
+
+class UCBAgent(Agent):
+    """
+        The Upper-Confidence-Bound (UCB) bandit agent from section 2.7 (Sutton and Barto, Chapter 2).
+
+        How it chooses
+        --------------
+        It first chooses a spot that has not been tried yet.
+        Otherwise, it chooses the shot with the highest UCB score:
+            
+            Q(a) + c * sqrt(log(t) / N(a))
+
+        The score considers both the estimated reward
+        and how often the spot has been selected.
+
+        Memory
+        ------
+        q : list
+            Estimated average reward for each fishing spot.
+        counts : list
+            Number of times each spot has been selected.
+        t : int
+            Total number of selections made so far.
+
+        Parameters
+        ----------
+        n_spots : int
+            Number of available fishing spots.
+        c : float
+            Controls the degree of exploration.
+
+        The update() method updates the estimated reward after each catch,
+        using the method from Section 2.4.
+    """
+
+    def __init__(self, n_spots, c=2.0):
+        super().__init__()
+        self.n_spots = n_spots
+        self.c = c
+        self.reset()
+
+    def reset(self):
+        self.q = [0.0] * self.n_spots
+        self.counts = [0] * self.n_spots
+        self.t = 0
+
+    def choose(self):
+        for spot in range(self.n_spots):
+            if self.counts[spot] == 0:
+                return spot
+
+        scores = [
+            self.q[spot] + self.c * math.sqrt(math.log(self.t) / self.counts[spot])
+            for spot in range(self.n_spots)
+        ]
+
+        best_score = max(scores)
+        best_spots = [i for i, score in enumerate(scores) if score == best_score]
+        return random.choice(best_spots)
+
+    def update(self, spot, catch):
+        self.t += 1
+        self.counts[spot] += 1
+        n = self.counts[spot]
+        self.q[spot] += (catch - self.q[spot]) / n
 
 
 # Task 6 (optional): add your contextual agents below, as subclasses of

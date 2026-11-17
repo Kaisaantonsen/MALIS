@@ -56,6 +56,21 @@
 
 = Part III: Bandit algorithms 
 == Task 4
+=== Description of our agents\ 
+*Human-Ruled Agent*\
+This agent follows specific rules based on its catches. It switches spots after two low catches at the same spot (doesn't have to be consecutive), two high catches in a row, or when a catch between the thresholds is no better than the previous catch at that spot.
+
+\
+*Epsilon-Greedy Agent*\
+Adapted from Sutton and Barto’s Reinforcement Learning. With probability ε, the agent chooses a spot at random. Otherwise, it chooses the spot with the highest estimated average catch. Ties are broken randomly.
+
+\
+*Upper Confidence Bound (UCB) Agent*\
+The agent first tries every spot once. Then it chooses the spot with the highest UCB score:
+$Q(a) + c * sqrt(log(t) / N(a))$
+Here, $Q(a)$ is the estimated average catch for spot $a$, $N(a)$ is how often it has been selected, and $t$ is the total number of selections. The bonus encourages the agent to try spots that have been selected less.
+
+\
 == Task 5
 
 = Part IV: Contextual bandits
