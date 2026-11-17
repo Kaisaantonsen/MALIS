@@ -2,7 +2,6 @@
 import random
 import statistics
 import csv
-
 from fishing import FishingBay, load_logs, choices, SPOTS
 
 

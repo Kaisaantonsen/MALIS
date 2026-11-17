@@ -49,6 +49,7 @@
 - Catch-based switching: Base fishing decisions on previous catches, deciding whether to stay or switch locations.
 
 \ 
+
 == Task 3
 *Cumulative pseudo-regret*
 
@@ -57,7 +58,6 @@ To evaluate decision quality independently of luck, we use cumulative pseudo-reg
 For each day, regret is calculated using the true mean catches rather than the observed catches. Therefore, random variations in the amount of fish caught do not directly affect the measure. Lower cumulative regret indicates better decisions, with zero regret corresponding to always selecting the optimal spot.
 
 In Season 3, the mean catches change on day 16. We therefore use the true means corresponding to each day when calculating regret.
-
 
 $
   R_T = sum_(t=1)^T (
