@@ -50,6 +50,26 @@
 
 \ 
 == Task 3
+We chose the cumulative regret as our performance metric. The reasoning for this is that even though a player chooses a good fishing spot, due to random variation, might still receives a small catch. 
+
+For each day:
+
+$ R_t = max_i mu_i - mu_(a_t) $
+
+Where:
+- $mu_i$ is the true average catch at fishing spot $i$
+- $a_t$ is the fishing spot chosen by the player on day $t$
+- $max_i mu_i$ is the best possible average catch that day
+
+
+The cumulative regret is:
+
+$ R_T = sum_(t=1)^T R_t $
+
+Interpretation:
+- Low regret means the player consistently selected good fishing spots.
+- High regret means the player often selected spots with lower expected catches.
+- A regret of zero means the player always selected the best spot.
 
 
 

@@ -346,5 +346,82 @@ class UCBAgent(Agent):
         self.q[spot] += (catch - self.q[spot]) / n
 
 
+class EpsilonGreedyAgent(Agent):
+    """Epsilon-greedy agent using sample-average rewards.
+
+    Memory:
+        Q: estimated average catch for each spot
+        N: number of visits to each spot
+
+    epsilon: probability of random exploration
+    """
+
+    def __init__(self, n_spots=5, seed=None, epsilon=0.1):
+        super().__init__(n_spots, seed)
+        self.epsilon = epsilon
+        self.reset()
+
+    def reset(self):
+        self.Q = np.zeros(self.n_spots)
+        self.N = np.zeros(self.n_spots, dtype=int)
+
+    def choose(self):
+        if self.rng.random() < self.epsilon:
+            return int(self.rng.integers(self.n_spots))
+
+        best_spots = np.flatnonzero(self.Q == np.max(self.Q))
+        return int(self.rng.choice(best_spots))
+
+    def update(self, spot, catch):
+        self.N[spot] += 1
+        self.Q[spot] += (
+            catch - self.Q[spot]
+        ) / self.N[spot]
+
+
+
+class UCBAgent(Agent):
+    """Upper Confidence Bound (UCB) agent.
+
+    Memory:
+        Q: estimated average catch per spot
+        N: number of visits per spot
+        t: total number of completed days
+
+    c: controls the amount of exploration
+    """
+
+    def __init__(self, n_spots=5, seed=None, c=2.0):
+        super().__init__(n_spots, seed)
+        self.c = c
+        self.reset()
+
+    def reset(self):
+        self.Q = np.zeros(self.n_spots)
+        self.N = np.zeros(self.n_spots, dtype=int)
+        self.t = 0
+
+    def choose(self):
+        unvisited = np.flatnonzero(self.N == 0)
+
+        if len(unvisited) > 0:
+            return int(self.rng.choice(unvisited))
+
+        scores = self.Q + self.c * np.sqrt(
+            np.log(self.t + 1) / self.N
+        )
+
+        best_spots = np.flatnonzero(scores == np.max(scores))
+        return int(self.rng.choice(best_spots))
+
+    def update(self, spot, catch):
+        self.t += 1
+        self.N[spot] += 1
+        self.Q[spot] += (
+            catch - self.Q[spot]
+        ) / self.N[spot]
+
+
+
 # Task 6 (optional): add your contextual agents below, as subclasses of
 # ContextualAgent.
