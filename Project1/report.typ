@@ -25,28 +25,43 @@
 ]
 = Part II: Human play 
 == Task 2
+
+#figure(
+  table(
+    columns: (auto, 1fr, 1fr, 1fr),
+    stroke: 0.5pt,
+    align: left,
+    inset: 6pt,
+    fill: (x, y) => if y == 0 { luma(230) },
+    table.header[*Player*][*Season 1*][*Season 2*][*Season 3*],
+    [Kaisa], [My decision on where to fish was totally random], [I decided to fish mostly on the three spots farest out in the sea, based on the feeling that I often got lighter catches by the land], [This round it was back to random decisions of fishing spots. This is because I did not see a pattern],
+    [Synne], [I chose a bit random, but I went back to the spots that gave me the most kg], [First I tried all the spots, then for the rest I chose the two spots which gave the most kg], [If a spot gave me a lot of fish, then I chose that same spot several times until it gave me a very low amount again],
+    [Fayad], [I did not have any strategy, when I see that I did not caught a lot of fishes, I fish in the same spot the next day, and likewise, when I see that I caught lot of fishes at one spot, I change the spot], [It was quite the same, I fish on the same spot multiple times when I see that I did not caught lot of fishes and change spot when I catch a lot at once], [When I fish at one spot and doesn't get lot of fishes, I continue to fish at the same spot. If it doesn't increase much the amount of fishes, I change the spot and come back later. If in a spot I caught lot of fishes, I fish once more and change spot],
+  ),
+  caption: [Strategy used by each team member in each season],
+) <tab-strategies>
 *Season 1*
-\ Kaisa: For the first season, my fishing spots were random. I visited all the spots, and did not focus on a specific one. This matches my strategy note: "My decision on where to fish was totally random".\ 
-\ Synne: I chose fishing spots quite randombly, but returned to the ones that gave the highest catches. My most visited spot was Old Pier. This matches my strategy note: "I chose a bit random, but I went back to the spots that gave me the most kg". Overall, I used a mix of exploration and exploitation.\ 
-\ Fayad: I didn't have a set strategy beforehand. Sometimes, if the catch was good, I fished there again the next day, but if I caught a lot of fish, I also changed to another spot. My choices mostly match my strategy note: "I did not have any strategy, when I see that I did not caught a lot of fishes, I fish in the same spot the next day, and likewise, when I see that I caught lot of fishes at one spot, I change the spot".
+\ Kaisa: My chosen fishing spots seem quite random, and I can't see any obvious pattern, which is consistent with my strategy (see @tab-strategies).
+\ Synne: I chose spots randomly, but often returned to the ones that gave the highest catches, which matches my strategy in @tab-strategies.
+\ Fayad: A bit randomized, I switched whether the catch was good or bad. As seen in @tab-strategies, my strategy was not fixed. 
 
-\ 
+\
 *Season 2*
-\ Kaisa: I fished mostly in the three spots further out at sea (Seagrass Bed, Deep Channel, Lighthouse Reef), and returned to Deep Channel the most as it gave the highest catch. This matches my strategy note, which was: "I decided to fish mostly on the three spots farest out in the sea, based on the feeling that I often got lighter catches by the land".\ 
-\ Synne: First, I visited all the fishing spots. After that, I mainly switched between Rocky Point and Seagrass Bed, which both produced relatively high catches. My strategy note: "First I tried all the spots, then for the rest I chose the two spots which gave the most kg", matches my actual choices.\ 
-\ Fayad: I did almost the same as in season 1. If the catch was high, I changed spot immediately, but if the catch was lower, I stayed longer. My strategy note was: "It was quite the same, I fish on the same spot multiple times when I see that I did not caught lot of fishes and change spot when I catch a lot at once", which my choices match. 
+\ Kaisa: I fished mostly at Seagrass Bed, Deep Channel, Lighthouse Reef, but also some at Deep Channel. My strategy was to fish further out (see @tab-strategies), which I did.  
+\ Synne: I tested all the fishing spots before mainly switching between Rocky Point and Seagrass Bed, following my strategy to fish where I caught the most @tab-strategies. 
+\ Fayad: Here I swicthed spots after high catches, and stayed longer after lower catches, consistent with my strategy in @tab-strategies.
 
-\ 
+\
 *Season 3*
-\ Kaisa: I went back to making mostly random choices. I continuted switching between all five fishing spots and did not stick to one for very long. The same applied after day 16. The choices I made reflects my strategy note: "This round it was back to random decisions of fishing spots. This is because I did not see a pattern".\ 
-\ Synne: I first visited all the spots. After getting a good catch, I sometimes returned to that spot. When the fishing conditions changed, I mainly chose Old Pier and Seagrass Bed. My strategy note "If a spot gave me a lot of fish, then I chose that same spot several times until it gave me a very low amount again", partially reflects my choices. However, I did end up switching mostly between Old Pier and Seagrass Bed.\ 
-\ Fayad: I continued to use a strategy based on how much fish I caught. When I got a low catch, I sometimes went back to the same spot. If the catch didn't improve, I changed location for a while. If the catch was high, I sometimes revisited it once more before changing. My strategy note was: "When I fish at one spot and doesn't get lot of fishes, I continue to fish at the same spot. If it doesn't increase much the amount of fishes, I change the spot and come back later. If in a spot I caught lot of fishes, I fish once more and change spot". This makes sense in terms of the choices I made. 
+\ Kaisa: I returned to making mostly random choices, switching between all five spots, just as described in @tab-strategies.
+\ Synne: I tried every fishing spot, but towards the end, I mainly alternated between where I got the highest catches (Old Pier and Seagrass Bed), almost as my strategy in @tab-strategies.
+\ Fayad: I adjusted my fishing choices according to my catches, sometimes giving a spot another chance after low catches and moving on after higher ones, same as my strategy in @tab-strategies.
 
 \ 
 *Abstracted team strategies*
-- Random exploration: Choose fishing spots randomly, without prioritising specific locations.
-- Exploration and exploitation: Test every fishing spot, then priortize those with the highest previous catches. 
-- Catch-based switching: Base fishing decisions on previous catches, deciding whether to stay or switch locations.
+- Random exploration: Always choose fishing spots randomly, never favouring specific ones. 
+- Exploration and exploitation: Explore every fishing spot before prioritising those with the highest previous catches.
+- Catch-based switching: Base fishing decisions on previous catches, deciding whether to stay or switch. 
 
 \ 
 
