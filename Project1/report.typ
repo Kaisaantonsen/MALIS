@@ -55,9 +55,7 @@
 
 To evaluate decision quality independently of luck, we use cumulative pseudo-regret. This measures the difference between the expected catch from always choosing the best fishing spot and the expected catch from the spots actually selected by the player.
 
-For each day, regret is calculated using the true mean catches rather than the observed catches. Therefore, random variations in the amount of fish caught do not directly affect the measure. Lower cumulative regret indicates better decisions, with zero regret corresponding to always selecting the optimal spot.
-
-In Season 3, the mean catches change on day 16. We therefore use the true means corresponding to each day when calculating regret.
+Unlike actual catch, this metric excludes random reward noise. In Season 3, the calculation accounts for the change in hidden means on day 16.
 
 $
   R_T = sum_(t=1)^T (
@@ -104,9 +102,9 @@ Interpretation:
 
 *Simulation Validation*
 
-To demonstrate that our performance measure separates decision quality from luck, we simulated the same uniformly random strategy on 500 randomly generated bays for each season using `FishingBay`. For each simulation, we calculated the expected catch of the selected spots, the optimal expected catch, cumulative pseudo-regret, and luck.
+To demonstrate that our performance measure separates decision quality from luck, we simulated a uniformly random strategy on 500 randomly generated bays per season using `FishingBay`. For each simulation, we calculated the expected catch, optimal expected catch, cumulative pseudo-regret, and luck.
 
-Cumulative pseudo-regret depends on the hidden mean parameters rather than the observed catches, so it excludes direct reward noise. Across the 500 simulations, mean luck was close to zero (0.92, 0.34, and 1.02 kg for Seasons 1-3), while the standard deviations were 12.97, 7.58, and 13.20 kg. This demonstrates that actual catches can vary substantially even when the same strategy is used, supporting the use of pseudo-regret to evaluate decision quality separately from observed luck.
+Since pseudo-regret depends on the hidden mean parameters rather than observed catches, it excludes direct reward noise. Across the simulations, mean luck was close to zero (0.92, 0.34, and 1.02 kg for Seasons 1-3), while the standard deviations were 12.97, 7.58, and 13.20 kg, respectively. These results show that actual catches can vary substantially even when using the same strategy, supporting pseudo-regret as a measure of decision quality independent of observed luck.
 
 
 #let random-results = csv("random_results.csv", row-type: dictionary)
@@ -230,10 +228,9 @@ Here, $Q(a)$ is the estimated average catch for spot $a$, $N(a)$ is how often it
 
 \
 == Task 5
-*Random bayes*
+*Random bays*
 
-We evaluated four agents on 1,000 randomly generated bays per season, using the same bay seeds to ensure fair comparisons. Performance was measured using cumulative pseudo-regret, where lower values indicate better decisions. @random-bays presents the mean regret and standard deviation.
-
+We evaluated four agents on 1,000 randomly generated bays per season, using identical bay seeds for fair comparisons. Table @random-bays presents mean cumulative pseudo-regret and standard deviation.
 
 #figure(
   table(
@@ -249,22 +246,20 @@ We evaluated four agents on 1,000 randomly generated bays per season, using the 
       table.cell(fill: rgb("#9fb6c6"))[*Season 3*],
     ),
 
-    [Random], [79.32 ± 29.86], [27.18 ± 11.25], [78.54 ± 21.47],
-    [Human Rule], [78.86 ± 32.14], [26.38 ± 13.81], [79.08 ± 24.93],
-    [ε-greedy], [55.14 ± 48.35], [24.16 ± 19.83], [66.13 ± 39.45],
-    [*UCB*], [*25.06 ± 11.17*], [*17.12 ± 5.96*], [*43.23 ± 20.73*],
+    [RandomAgent], [79.32 ± 29.86], [27.18 ± 11.25], [78.54 ± 21.47],
+    [HumanRuleAgent], [78.86 ± 32.14], [26.38 ± 13.81], [79.08 ± 24.93],
+    [EpsilonGreedyAgent], [55.14 ± 48.35], [24.16 ± 19.83], [66.13 ± 39.45],
+    [UCBAgent], [25.06 ± 11.17], [17.12 ± 5.96], [43.23 ± 20.73],
   ),
   caption: [Mean cumulative pseudo-regret ± standard deviation (kg) across 1,000 randomly generated bays per season. Lower values indicate better performance.],
 ) <random-bays>
 
 
-UCB consistently achieved the lowest mean regret across all seasons, demonstrating an effective balance between exploration and exploitation. Its relatively low standard deviation also indicates more consistent performance. ε-greedy generally outperformed random selection but showed considerably greater variability. The human-inspired strategy performed similarly to the random baseline.
-
-Season 2 had lower cumulative regret partly because it lasted only 10 days, compared with 30 days for the other seasons. Season 3 introduced changing reward distributions, making adaptation more challenging.
+UCB achieved the lowest mean regret in all three seasons, with relatively low variability. ε-greedy generally outperformed random selection but showed greater variability, while the human-inspired strategy performed similarly to random. Season 2 had lower cumulative regret partly because of its shorter duration, while Season 3 introduced nonstationary rewards.
 
 *Our team's bays*
 
-We reconstructed the nine original fishing bays using FishingBay.from_log() and evaluated each agent under the same conditions as the human players. @team-bays compares their cumulative pseudo-regret.
+Using FishingBay.from_log(), we reconstructed the nine original human bays and compared all agents under identical conditions (Table @team-bays).
 
 
 #figure(
@@ -302,7 +297,7 @@ We reconstructed the nine original fishing bays using FishingBay.from_log() and 
 ) <team-bays>
 
 
-UCB outperformed the human players in eight of nine cases. The exception was Fayad in Season 2, where the human achieved 25.9 kg regret compared with UCB's 31.7 kg. ε-greedy performed particularly well on Fayad's Season 1 bay and Synne's Season 3 bay. Overall, UCB demonstrated the strongest performance, although individual results varied depending on the bay and random seed.
+UCB outperformed the humans in eight of nine cases. Fayad was the exception in Season 2, achieving 25.9 kg regret compared with UCB's 31.7 kg. $epsilon$-greedy performed best on two individual bays, illustrating that performance depends on the environment and random seed.
 
 = Part IV: Contextual bandits
 == Task 6
