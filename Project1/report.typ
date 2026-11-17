@@ -304,7 +304,135 @@ We reconstructed the nine original fishing bays using FishingBay.from_log() and 
 
 UCB outperformed the human players in eight of nine cases. The exception was Fayad in Season 2, where the human achieved 25.9 kg regret compared with UCB's 31.7 kg. ε-greedy performed particularly well on Fayad's Season 1 bay and Synne's Season 3 bay. Overall, UCB demonstrated the strongest performance, although individual results varied depending on the bay and random seed.
 
+
+*Seasons 2 and 3*
+
+#figure(
+  table(
+    columns: (auto, 1fr, 1fr),
+    align: center,
+    inset: 5pt,
+    stroke: 0.5pt + black,
+
+    table.header(
+      table.cell(fill: rgb("#9fb6c6"))[*Agent*],
+      table.cell(fill: rgb("#9fb6c6"))[*Season 2*],
+      table.cell(fill: rgb("#9fb6c6"))[*Season 3*],
+    ),
+
+    [ε-greedy], [+7.0 ± 0.6], [+22.9 ± 1.2],
+    [Human Rule], [+9.3 ± 0.4], [+35.9 ± 0.8],
+    [Random], [+10.1 ± 0.3], [+35.3 ± 0.8],
+  ),
+  caption: [Extra cumulative pseudo-regret compared with UCB (kg), mean ± standard error over the same 1,000 bays. UCB: 17.1 kg in Season 2, 43.2 kg in Season 3.],
+) <seasons-2-3>
+
+Comparing each agent with UCB on the same bays, UCB is the best agent in both seasons (every difference exceeds 10 standard errors). In Season 2, UCB tries every spot once, then exploits the best average from day 6, while ε-greedy rarely leaves its first spot. In Season 3, UCB and ε-greedy fall to random level on day 16; UCB recovers faster because its exploration bonus grows for spots not visited recently. The human rule keeps no estimate per spot and stays at random level throughout.
+
+*Parameter*
+
+#figure(
+  table(
+    columns: (auto, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
+    align: center,
+    inset: 5pt,
+    stroke: 0.5pt + black,
+
+    table.header(
+      table.cell(fill: rgb("#9fb6c6"))[*ε*],
+      table.cell(fill: rgb("#9fb6c6"))[*0*],
+      table.cell(fill: rgb("#9fb6c6"))[*0.05*],
+      table.cell(fill: rgb("#9fb6c6"))[*0.1*],
+      table.cell(fill: rgb("#9fb6c6"))[*0.2*],
+      table.cell(fill: rgb("#9fb6c6"))[*0.3*],
+      table.cell(fill: rgb("#9fb6c6"))[*0.5*],
+    ),
+
+    [Season 1], [78.0], [62.5], [55.1], [49.2], [*48.5*], [53.5],
+    [Season 2], [26.2], [25.0], [24.2], [23.0], [*22.3*], [22.6],
+    [Season 3], [78.7], [71.7], [66.1], [*60.4*], [60.8], [62.0],
+  ),
+  caption: [Mean cumulative pseudo-regret (kg) of ε-greedy over 1,000 bays per season. Bold: lowest regret.],
+) <epsilon>
+
+The regret of ε-greedy decreases up to ε = 0.2–0.3 in every season, then rises at 0.5. The optimum is high because the estimates start at zero: with ε = 0 the agent never leaves its first spot, so random days are its only way to explore. Even at its best, ε-greedy stays far behind UCB (48.5 vs 25.1 kg in Season 1).
+
 = Part IV: Contextual bandits
 == Task 6
+
+#figure(
+  text(size: 8pt)[
+  #table(
+    columns: (auto, 1fr, 1fr, 1fr, 1fr, 1fr),
+    align: center,
+    inset: 5pt,
+    stroke: 0.5pt + black,
+
+    table.header(
+      table.cell(fill: rgb("#9fb6c6"))[*`n_init`*],
+      table.cell(fill: rgb("#9fb6c6"))[*Warm-up days*],
+      table.cell(fill: rgb("#9fb6c6"))[*Mean regret (kg)*],
+      table.cell(fill: rgb("#9fb6c6"))[*Mean efficiency*],
+      table.cell(fill: rgb("#9fb6c6"))[*Worst bay*],
+      table.cell(fill: rgb("#9fb6c6"))[*Bays below 80%*],
+    ),
+
+    [1], [5], [231.4], [92.0%], [36.4%], [8.5%],
+    [2], [10], [142.7], [94.9%], [50.2%], [3.5%],
+    [3], [15], [149.4], [94.8%], [62.0%], [2.5%],
+    [*5*], [25], [166.4], [94.4%], [*85.4%*], [*0%*],
+    [10], [50], [257.2], [91.4%], [83.4%], [0%],
+    [20], [100], [456.7], [84.9%], [76.8%], [4.0%],
+  )
+  ],
+  caption: [Regression agent acting only on its predictions after `n_init` visits per spot, over 200 contextual bays (300 days).],
+) <n-init>
+
+#figure(
+  table(
+    columns: (auto, 1fr, auto),
+    align: center,
+    inset: 5pt,
+    stroke: 0.5pt + black,
+
+    table.header(
+      table.cell(fill: rgb("#9fb6c6"))[**],
+      table.cell(fill: rgb("#9fb6c6"))[*Days at spot 0 / 1 / 2 / 3 / 4*],
+      table.cell(fill: rgb("#9fb6c6"))[*Efficiency*],
+    ),
+
+    [Days each spot is truly the best], [296 / 2 / 0 / 0 / 2], [–],
+    [1 visit per spot], [1 / 4 / 3 / 1 / 291], [36.4%],
+    [5 visits per spot], [280 / 5 / 5 / 5 / 5], [94.9%],
+  ),
+  caption: [Bay 156, where acting only on the predictions fails.],
+) <bay-156>
+
+#figure(
+  text(size: 8pt)[
+  #table(
+    columns: (auto, 1fr, 1fr, 1fr, 1fr),
+    align: center,
+    inset: 5pt,
+    stroke: 0.5pt + black,
+
+    table.header(
+      table.cell(fill: rgb("#9fb6c6"))[*Agent*],
+      table.cell(fill: rgb("#9fb6c6"))[*Mean regret (kg)*],
+      table.cell(fill: rgb("#9fb6c6"))[*Mean efficiency*],
+      table.cell(fill: rgb("#9fb6c6"))[*Worst bay*],
+      table.cell(fill: rgb("#9fb6c6"))[*Bays below 80%*],
+    ),
+
+    [Random], [1305.0], [57.1%], [29.8%], [100%],
+    [UCB, no context (best of Part III)], [190.8], [93.1%], [70.0%], [6.0%],
+    [Regression, 1 visit], [231.4], [92.0%], [36.4%], [8.5%],
+    [*Regression, 5 visits (final)*], [*166.4*], [*94.4%*], [*85.4%*], [*0%*],
+  )
+  ],
+  caption: [Comparison over 200 contextual bays.],
+) <contextual>
+
+Each spot's mean catch is linear in wind, waves and tide, with spot-specific weights, so we fit one linear regression per spot. The agent fishes every spot `n_init` times, then the spot with the highest predicted catch. Acting only on the predictions fails when the regressions start with too little data: with one visit per spot, 8.5% of the bays fall below 80% efficiency. In bay 156, the single catch at the best spot was low, so its prediction stayed low (about 1 kg instead of 9.2 kg) and the agent never returned to correct it. A wrong prediction confirms itself, because the agent only collects data where it already expects good catches. Our fix is 5 visits per spot: no bay falls below 80%, at the cost of 24 kg of mean regret compared with 2 visits. The final agent has 13% less regret than UCB and a much better worst case, but it never re-checks a spot after the warm-up.
 
 = Team member contributions
