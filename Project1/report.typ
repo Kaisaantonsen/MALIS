@@ -50,27 +50,165 @@
 
 \ 
 == Task 3
-We chose the cumulative regret as our performance metric. The reasoning for this is that even though a player chooses a good fishing spot, due to random variation, might still receives a small catch. 
+*Cumulative pseudo-regret*
 
-For each day:
+To evaluate decision quality independently of luck, we use cumulative pseudo-regret. This measures the difference between the expected catch from always choosing the best fishing spot and the expected catch from the spots actually selected by the player.
 
-$ R_t = max_i mu_i - mu_(a_t) $
+For each day, regret is calculated using the true mean catches rather than the observed catches. Therefore, random variations in the amount of fish caught do not directly affect the measure. Lower cumulative regret indicates better decisions, with zero regret corresponding to always selecting the optimal spot.
 
-Where:
-- $mu_i$ is the true average catch at fishing spot $i$
-- $a_t$ is the fishing spot chosen by the player on day $t$
-- $max_i mu_i$ is the best possible average catch that day
+In Season 3, the mean catches change on day 16. We therefore use the true means corresponding to each day when calculating regret.
 
 
-The cumulative regret is:
+$
+  R_T = sum_(t=1)^T (
+    max_i mu_(i,t) - mu_(a_t,t)
+  )
+$
 
-$ R_T = sum_(t=1)^T R_t $
+Here, $T$ is the number of days, $mu_(i,t)$ is the true mean catch at spot $i$ on day $t$, and $a_t$ is the spot selected by the player.
+
 
 Interpretation:
 - Low regret means the player consistently selected good fishing spots.
 - High regret means the player often selected spots with lower expected catches.
 - A regret of zero means the player always selected the best spot.
 
+#pagebreak()
+*Decision efficiency*
+
+Cumulative pseudo-regret measures the total loss in reference expected catch, but it depends on the number of days in a season. Since Season 2 lasts only 10 days, compared with 30 days in Seasons 1 and 3, we also use decision efficiency to compare performance across seasons of different lengths.
+
+
+$
+  eta = frac(
+    sum_(t=1)^T mu_(a_t, t),
+    sum_(t=1)^T max_i mu_(i,t)
+  ) times 100%
+$
+
+This measures how much of the optimal reference expected catch the player's decisions achieved.
+
+
+*Luck*
+
+Even if a player chooses a good spot, the actual catch may be low due to random variation. We define luck as:
+
+$ L_T = sum_(t=1)^T (r_t - mu_(a_t, t)) $
+
+Where $r_t$ is the actual observed catch at day $t$.
+
+Interpretation:
+- Positive luck means the player recieved a higher catch than the reference expectation.
+- Negative luck means the actual catch was below the reference ecpectation.
+- Luck of zero means the player received exactly the expected catch.
+
+*Simulation Validation*
+
+To demonstrate that our performance measure separates decision quality from luck, we simulated the same uniformly random strategy on 500 randomly generated bays for each season using `FishingBay`. For each simulation, we calculated the expected catch of the selected spots, the optimal expected catch, cumulative pseudo-regret, and luck.
+
+Cumulative pseudo-regret depends on the hidden mean parameters rather than the observed catches, so it excludes direct reward noise. Across the 500 simulations, mean luck was close to zero (0.92, 0.34, and 1.02 kg for Seasons 1-3), while the standard deviations were 12.97, 7.58, and 13.20 kg. This demonstrates that actual catches can vary substantially even when the same strategy is used, supporting the use of pseudo-regret to evaluate decision quality separately from observed luck.
+
+
+#let random-results = csv("random_results.csv", row-type: dictionary)
+
+#let fmt(value, decimals: 1) = {
+  let factor = calc.pow(10, decimals)
+  let rounded = calc.round(float(value) * factor) / factor
+  str(rounded)
+}
+
+#figure(
+  text(size: 8pt)[
+    #table(
+      columns: (auto, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
+      align: center,
+      inset: 6pt,
+      stroke: 0.6pt + black,
+
+      ..(
+        ("Season", "Expected", "Optimal",
+        "Efficiency", "Regret", "Mean luck", "Luck SD")
+        .map(name => table.cell(
+          fill: rgb("#9fb6c6"),
+          text(weight: "bold", name)
+        ))
+      ),
+
+      ..random-results.map(row => (
+        [#row.at("Season")],
+        [#fmt(row.at("Expected"))],
+        [#fmt(row.at("Optimal"))],
+        [#fmt(row.at("Efficiency (%)"), decimals: 2)%],
+        [#fmt(row.at("Regret"))],
+        [#fmt(row.at("Luck"))],
+        [#fmt(row.at("Luck SD"))],
+      )).flatten(),
+    )
+  ],
+  caption: [Performance of a uniformly random strategy
+    averaged over 500 simulated bays per season.
+    All catch-related values are in kg.],
+) <random-results>
+
+
+#pagebreak()
+*Human player performance*
+
+#let results = csv("human_results.csv", row-type: dictionary)
+
+
+// Convert student IDs to names
+#let player-name(id) = {
+  if id == "antonsen" { "Kaisa" }
+  else if id == "raad" { "Synne" }
+  else if id == "toukouro" { "Fayad" }
+  else { id }
+}
+
+#figure(
+  text(size: 8pt)[
+    #table(
+      columns: (auto, auto, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
+      align: center,
+      inset: 5pt,
+      stroke: 0.6pt + black,
+
+      // Header
+      ..(
+        ("Player", "Season", "Actual", "Expected",
+         "Optimal", "Efficiency", "Regret", "Luck")
+        .map(name => table.cell(
+          fill: rgb("#9fb6c6"),
+          text(weight: "bold", name)
+        ))
+      ),
+
+      // Generate all rows from CSV
+      ..results.map(row => (
+        [#player-name(row.at("Player"))],
+        [#row.at("Season")],
+        [#fmt(row.at("Actual"))],
+        [#fmt(row.at("Expected"))],
+        [#fmt(row.at("Optimal"))],
+        [#fmt(row.at("Efficiency (%)"), decimals: 2)%],
+        [#fmt(row.at("Regret"))],
+        [#fmt(row.at("Luck"))],
+      )).flatten(),
+    )
+  ],
+  caption: [Human player performance across all three seasons.
+    Catch, expected, optimal, regret and luck are measured in kg.],
+) <human-results>
+
+
+
+*Comparison across seasons*
+
+In Season 2, the shorter 10-day horizon reduced the time available for exploration and exploitation. Kaisa shifted from random exploration to favoring offshore spots, while Fayad continued catch-based strategy. Synne adopted the clearest explore-then-exploit strategy, testing all five spots before concentrating on the two with the highest initial catches. Her decision efficiency increased from 60.14% in Season 1 to 76.46% in Season 2, whereas Kaisa's and Fayad's efficiencies decreased.
+
+In Season 3, the hidden mean catches changed on day 16, potentially making previously learned information outdated. Kaisa continued selecting spots without a clear adaptation pattern, and her efficiency decreased from 80.72% before the change to 71.84% afterward. Synne gradually focused on Old Pier and Seagrass Bed, exclusively alternating between them from day 23, approximately seven days after the change. Fayad selected the new optimal spot, Deep Channel, on day 16 and repeatedly returned to it. His efficiency remained approximately 84% in both periods, although this does not prove that he immediately detected the change.
+
+Overall, Synne showed the clearest behavioral adjustment to the shorter season and a gradual response to the environmental change. Fayad maintained the highest efficiency in Season 3, while Kaisa showed no clear systematic adaptation. Since each human played only one bay per season, these comparisons are descriptive rather than conclusive evidence of general strategy performance.
 
 
 
