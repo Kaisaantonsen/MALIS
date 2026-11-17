@@ -142,66 +142,8 @@ class RandomContextualAgent(ContextualAgent):
 
 
 class HumanRuleAgent(Agent):
-    """Task 4: the best human strategy of the team (Synne, Season 2).
-
-    Rule, as it can be applied by hand: "try every spot once, then
-    alternate between the two spots with the best average catch".
-
-    How it chooses
-    --------------
-    1. Tour. Days 1 to n_spots: fish spot 0, then 1, ..., then n_spots - 1.
-    2. Alternate. Every following day, rank the spots by their average catch
-       so far and keep the two best. If yesterday's spot was the best one,
-       fish the second best; otherwise fish the best one. The averages are
-       updated every day, so the two spots of the pair can change.
-       Ties are broken by the lowest spot number.
-
-    Memory
-    ------
-    totals : array of n_spots floats
-        Sum of the catches at each spot.
-    counts : array of n_spots ints
-        Number of days each spot was fished.
-    last : int or None
-        Spot fished yesterday (None before the first day).
-
-    Parameters
-    ----------
-    n_spots : int
-        Number of fishing spots (5 in the game).
-    seed : int or None
-        Unused: the rule is deterministic. Kept for the common interface.
-    """
-
-    def __init__(self, n_spots=5, seed=None):
-        super().__init__(n_spots=n_spots, seed=seed)
-        self.reset()
-
-    def reset(self):
-        self.totals = np.zeros(self.n_spots)
-        self.counts = np.zeros(self.n_spots, dtype=int)
-        self.last = None
-
-    def choose(self):
-        # 1. Tour: the first spot not tried yet.
-        untried = np.flatnonzero(self.counts == 0)
-        if untried.size > 0:
-            return int(untried[0])
-        # 2. Alternate between the two best averages (stable sort: ties -> lowest number).
-        averages = self.totals / self.counts
-        best, second = np.argsort(-averages, kind="stable")[:2]
-        return int(second if self.last == best else best)
-
-    def update(self, spot, catch):
-        self.totals[spot] += catch
-        self.counts[spot] += 1
-        self.last = spot
-
-
-class CatchBasedAgent(Agent):
     """
     Rule-based agent that changes spots based on recent catches.
-    (First version of the human rule, kept for comparison.)
 
     How it chooses
     --------------
