@@ -267,7 +267,17 @@ We evaluated four agents on 1,000 randomly generated bays per season, using iden
 ) <random-bays>
 
 
-UCB achieved the lowest mean regret in all three seasons, with relatively low variability. ε-greedy generally outperformed random selection but showed greater variability, while the human-inspired strategy performed similarly to random. Season 2 had lower cumulative regret partly because of its shorter duration, while Season 3 introduced nonstationary rewards.
+UCB achieved the lowest mean regret in all three seasons, with relatively low variability. $epsilon$-greedy generally outperformed random selection but showed greater variability, while the human-inspired strategy performed similarly to random. Season 2 had lower cumulative regret partly because of its shorter duration, while Season 3 introduced nonstationary rewards.
+
+$epsilon$-greedy's mean lies well above its median from @fig-regret-dist. It does well
+when its first spot is good and then badly otherwise.
+
+#figure(
+  image("fig1_regret_distribution.png", width: 100%),
+  caption: [Cumulative pseudo-regret over 1,000 bays per season
+  (box: quartiles, line: median, diamond: mean, whiskers: 1.5×IQR,
+  outliers hidden). Lower is better.],
+) <fig-regret-dist>
 
 *Our team's bays*
 
