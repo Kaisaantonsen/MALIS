@@ -110,16 +110,13 @@ $ L_T = sum_(t=1)^T (r_t - mu_(a_t, t)) $
 
 Where $r_t$ is the actual observed catch at day $t$.
 
-Interpretation:
-- Positive luck means the player recieved a higher catch than the reference expectation.
-- Negative luck means the actual catch was below the reference ecpectation.
-- Luck of zero means the player received exactly the expected catch.
+Positive luck means the catch is above expectation and negative luck, below expectation.
 
 *Simulation Validation*
 
 To demonstrate that our performance measure separates decision quality from luck, we simulated a uniformly random strategy on 500 randomly generated bays per season using `FishingBay`. For each simulation, we calculated the expected catch, optimal expected catch, cumulative pseudo-regret, and luck.
 
-Since pseudo-regret depends on the hidden mean parameters rather than observed catches, it excludes direct reward noise. Across the simulations, mean luck was close to zero (0.92, 0.34, and 1.02 kg for Seasons 1-3), while the standard deviations were 12.97, 7.58, and 13.20 kg, respectively. These results show that actual catches can vary substantially even when using the same strategy, supporting pseudo-regret as a measure of decision quality independent of observed luck.
+Across the simulations, mean luck was close to zero (0.92, 0.34, and 1.02 kg for Seasons 1-3), while the standard deviations were 12.97, 7.58, and 13.20 kg, respectively. These results show that actual catches can vary substantially even when using the same strategy, supporting pseudo-regret as a measure of decision quality independent of observed luck.
 
 
 #let random-results = csv("random_results.csv", row-type: dictionary)
@@ -245,7 +242,7 @@ Here, $Q(a)$ is the estimated average catch for spot $a$, $N(a)$ is how often it
 == Task 5
 *Random bays*
 
-We evaluated four agents on 1,000 randomly generated bays per season, using identical bay seeds for fair comparisons. Table @random-bays presents mean cumulative pseudo-regret and standard deviation.
+We evaluated four agents on 1,000 randomly generated bays per season, using identical bay seeds for fair comparisons. @random-bays presents mean cumulative pseudo-regret and standard deviation.
 
 #figure(
   table(
@@ -274,7 +271,7 @@ UCB achieved the lowest mean regret in all three seasons, with relatively low va
 
 *Our team's bays*
 
-Using FishingBay.from_log(), we reconstructed the nine original human bays and compared all agents under identical conditions (Table @team-bays).
+Using FishingBay.from_log(), we reconstructed the nine original human bays and compared all agents under identical conditions (@team-bays).
 
 
 #figure(
@@ -446,9 +443,15 @@ The regret of ε-greedy decreases up to ε = 0.2–0.3 in every season, then ris
 Each spot's mean catch is linear in wind, waves and tide, with spot-specific weights, so we fit one linear regression per spot. The agent fishes every spot `n_init` times, then the spot with the highest predicted catch. Acting only on the predictions fails when the regressions start with too little data: with one visit per spot, 8.5% of the bays fall below 80% efficiency. In bay 156, the single catch at the best spot was low, so its prediction stayed low (about 1 kg instead of 9.2 kg) and the agent never returned to correct it. A wrong prediction confirms itself, because the agent only collects data where it already expects good catches. Our fix is 5 visits per spot: no bay falls below 80%, at the cost of 24 kg of mean regret compared with 2 visits. The final agent has 13% less regret than UCB and a much better worst case, but it never re-checks a spot after the warm-up.
 
 = Team member contributions
+<<<<<<< Updated upstream
 When working on this project, we tried our best to divide the work equally among each other, which we feel like we succeeded in. 
 Even though we delegated differently, everyone has contributed the same amount to the project. 
 
-*Kaisa*: 
+*Kaisa*: My contribution to this project was task 3 in part 2 and partly task 5 in part 3. 
+
 *Synne*: I worked most on task 2 in part 2, and task 4 in part 3. 
+
 *Fayad*:
+
+= Use of generative AI
+In this project, ChatGPT has been used to get the correct syntax for making the tables in the report. 
