@@ -451,7 +451,7 @@ Even though we delegated differently, everyone has contributed the same amount t
 
 *Synne*: I worked most on task 2 in part 2, and task 4 in part 3. 
 
-*Fayad*:
+*Fayad*: My contribution to this project was task 5 in part 3 (the best agents for Seasons 2 and 3, and the study of ε for ε-greedy) and task 6 in part 4.
 
 = Use of generative AI
 In this project, ChatGPT has been used to get the correct syntax for making the tables in the report. 
