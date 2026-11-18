@@ -443,7 +443,6 @@ The regret of ε-greedy decreases up to ε = 0.2–0.3 in every season, then ris
 Each spot's mean catch is linear in wind, waves and tide, with spot-specific weights, so we fit one linear regression per spot. The agent fishes every spot `n_init` times, then the spot with the highest predicted catch. Acting only on the predictions fails when the regressions start with too little data: with one visit per spot, 8.5% of the bays fall below 80% efficiency. In bay 156, the single catch at the best spot was low, so its prediction stayed low (about 1 kg instead of 9.2 kg) and the agent never returned to correct it. A wrong prediction confirms itself, because the agent only collects data where it already expects good catches. Our fix is 5 visits per spot: no bay falls below 80%, at the cost of 24 kg of mean regret compared with 2 visits. The final agent has 13% less regret than UCB and a much better worst case, but it never re-checks a spot after the warm-up.
 
 = Team member contributions
-<<<<<<< Updated upstream
 When working on this project, we tried our best to divide the work equally among each other, which we feel like we succeeded in. 
 Even though we delegated differently, everyone has contributed the same amount to the project. 
 
@@ -454,4 +453,4 @@ Even though we delegated differently, everyone has contributed the same amount t
 *Fayad*: My contribution to this project was task 5 in part 3 (the best agents for Seasons 2 and 3, and the study of ε for ε-greedy) and task 6 in part 4.
 
 = Use of generative AI
-In this project, ChatGPT has been used to get the correct syntax for making the tables in the report. 
+In this project, ChatGPT has been used to get the correct syntax for making the tables in the report, and for text formatting and correction.
